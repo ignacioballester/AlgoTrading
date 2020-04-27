@@ -2,7 +2,7 @@ import backtrader as bt
 import datetime
 from collections import defaultdict
 
-from Indicators import  TwoSMA
+from Indicators import  TwoSMA, ThreePercent
 
 class ThreeSMA(bt.Indicator):
     lines = ('dummyline',)
@@ -43,6 +43,7 @@ class IndicatorBacktesting(bt.Strategy):
     params = (('buySignal', 1),
               ('sellSignal', -1),
               ('barsAfterSignal', 10),
+              ('average', False)
               )
 
     def log(self, txt, important=False, data=None):
@@ -58,6 +59,11 @@ class IndicatorBacktesting(bt.Strategy):
         self.idSell = dict()
 
         self.sma = dict()
+        self.sma1 = bt.indicators.SimpleMovingAverage(
+            self.data, period=14)
+
+        self.sma2 = bt.indicators.SimpleMovingAverage(
+            self.data, period=50)
         # Add 3 MovingAverageSimple indicator per stock
         self.indicator = dict()
         for d in self.datas:
@@ -66,7 +72,7 @@ class IndicatorBacktesting(bt.Strategy):
 
             self.idBuy[d] = 0
             self.idSell[d] = 0
-            self.indicator[d] = TwoSMA(d)
+            self.indicator[d] = ThreeSMA(d)
 
 
     def next(self):
@@ -87,9 +93,12 @@ class IndicatorBacktesting(bt.Strategy):
                 barSignal = self.signalsBuy[d][id][0]
                 if len(self) >= barSignal + 1+ self.p.barsAfterSignal and self.signalsBuy[d][id][3] is None:
                     priceSignal = self.signalsBuy[d][id][1]
-                    priceAvargeNow = (d.close[0]+ d.close[-1]+ d.close[-2])/3.0
-                    self.signalsBuy[d][id][2] = priceAvargeNow
-                    self.signalsBuy[d][id][3] = priceAvargeNow / priceSignal
+                    priceNow = d.close[0]
+                    if self.p.average:
+                        priceNow = (d.close[0] + d.close[-1] + d.close[-2]) / 3.0
+
+                    self.signalsBuy[d][id][2] = priceNow
+                    self.signalsBuy[d][id][3] = priceNow / priceSignal
 
 
             if (indicator[0]==self.p.sellSignal):
@@ -103,9 +112,11 @@ class IndicatorBacktesting(bt.Strategy):
                 barSignal = self.signalsSell[d][id][0]
                 if len(self) >= barSignal + self.p.barsAfterSignal and self.signalsSell[d][id][3] is None:
                     priceSignal = self.signalsSell[d][id][1]
-                    priceAvargeNow = (d.close[0]+ d.close[-1]+ d.close[-2])/3.0
-                    self.signalsSell[d][id][2] = priceAvargeNow
-                    self.signalsSell[d][id][3] = priceSignal / priceAvargeNow
+                    priceNow = d.close[0]
+                    if self.p.average:
+                        priceNow = (d.close[0] + d.close[-1] + d.close[-2]) / 3.0
+                    self.signalsSell[d][id][2] = priceNow
+                    self.signalsSell[d][id][3] = priceSignal / priceNow
 
 
     def stop(self):

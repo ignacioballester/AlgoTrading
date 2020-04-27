@@ -26,9 +26,13 @@ class ThreeSMA(bt.Indicator):
             if self.isUp is False and  sma3 < sma2 < sma1:
                 self.lines.dummyline[0] = 1
                 self.isUp = True
+                self.isDown = False
+
             elif self.isDown is False and sma3> sma2 > sma1:
                 self.lines.dummyline[0] = -1
                 self.isDown = True
+                self.isUp = False
+
             else:
                 self.lines.dummyline[0] = 0
         except:
@@ -59,10 +63,38 @@ class TwoSMA(bt.Indicator):
             if self.isUp is False and sma2 < sma1:
                 self.lines.dummyline[0] = 1
                 self.isUp = True
+                self.isDown = False
             elif self.isDown is False and sma2 > sma1:
                 self.lines.dummyline[0] = -1
                 self.isDown = True
+                self.isUp = False
             else:
                 self.lines.dummyline[0] = 0
         except:
             self.lines.dummyline[0] = 0
+
+class ThreePercent(bt.Indicator):
+    lines = ('dummyline',)
+
+
+    params = (('value', 5), ('periods', [14, 50]))
+
+    def __init__(self):
+
+        self.lastValue = None
+
+
+
+    def next(self):
+        if self.lastValue is not None:
+            if self.lastValue/self.data.close[0] >=1.03:
+                self.lines.dummyline[0] = 1
+                self.lastValue = self.data.close[0]
+            elif self.data.close[0]/self.lastValue >=1.03:
+                self.lines.dummyline[0] = -1
+                self.lastValue = self.data.close[0]
+            else:
+                self.lines.dummyline[0] = 0
+
+        else:
+            self.lastValue = self.data.close[0]

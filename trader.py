@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     # Create a Data Feed for each file in directory
 
-    directory = "data/S&P 500/"
+    directory = "data/EURO STOXX 50/"
     data=[]
     for filename in os.listdir(directory):
         data = bt.feeds.YahooFinanceCSVData(
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     cerebro.addsizer(MarginSizer,  percent=0.1)
     #cerebro.addsizer(bt.sizers.FixedSize,  stake=1)
 
-    cerebro.optstrategy(IndicatorBacktesting, barsAfterSignal=15)
+    cerebro.optstrategy(IndicatorBacktesting, barsAfterSignal=range(19, 25), average=False)
 
 
     # Run over everything
