@@ -2,46 +2,12 @@ import backtrader as bt
 import datetime
 from collections import defaultdict
 
-from Indicators import  TwoSMA, ThreePercent
-
-class ThreeSMA(bt.Indicator):
-    lines = ('dummyline',)
-    params = (('periods', [14, 50, 200]),)
-
-    def __init__(self):
-        self.isUp = False
-        self.isDown = False
-
-        self.sma1 = bt.indicators.SimpleMovingAverage(
-            self.data, period=self.p.periods[0])
-
-        self.sma2 = bt.indicators.SimpleMovingAverage(
-            self.data, period=self.p.periods[1])
-
-        self.sma3 = bt.indicators.SimpleMovingAverage(
-            self.data, period=self.p.periods[2])
-
-    def next(self):
-        sma1 = self.sma1[0]
-        sma2 = self.sma2[0]
-        sma3 = self.sma3[0]
-
-        try:
-            if self.isUp is False and  sma3 < sma2 < sma1:
-                self.lines.dummyline[0] = 1
-                self.isUp = True
-            elif self.isDown is False and sma3> sma2 > sma1:
-                self.lines.dummyline[0] = -1
-                self.isDown = True
-            else:
-                self.lines.dummyline[0] = 0
-        except:
-            self.lines.dummyline[0] = 0
+import Indicators
 
 # Create a Stratey
 class IndicatorBacktesting(bt.Strategy):
-    params = (('buySignal', 1),
-              ('sellSignal', -1),
+    params = (('buySignal', 3),
+              ('sellSignal', 1),
               ('barsAfterSignal', 10),
               ('average', False)
               )
@@ -72,17 +38,17 @@ class IndicatorBacktesting(bt.Strategy):
 
             self.idBuy[d] = 0
             self.idSell[d] = 0
-            self.indicator[d] = ThreeSMA(d)
+            self.indicator[d] = bt.indicators.MACDHisto(d)
 
 
     def next(self):
         # Simply log the closing price of the series from the reference
         for i, d in enumerate(self.datas):
             # Check if an order is pending ... if yes, we cannot send a 2nd one
-            dt, dn, p = self.datetime.date(), d._name, d.close[0]
+            dt, dn, p = self.datetime.dateAyer(), d._name, d.close[0]
 
             indicator = self.indicator[d]
-            if (indicator[0]==self.p.buySignal):
+            if (indicator[0]>=self.p.buySignal):
                 barSignal = len(self)
                 priceSignal = d.close[0]
                 data = [barSignal, priceSignal, None, None]
@@ -101,7 +67,7 @@ class IndicatorBacktesting(bt.Strategy):
                     self.signalsBuy[d][id][3] = priceNow / priceSignal
 
 
-            if (indicator[0]==self.p.sellSignal):
+            if (indicator[0]<=-self.p.sellSignal):
                 barSignal = len(self)
                 priceSignal = d.close[0]
                 data = [barSignal, priceSignal, None, None]

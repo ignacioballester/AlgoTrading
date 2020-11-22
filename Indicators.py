@@ -74,16 +74,11 @@ class TwoSMA(bt.Indicator):
             self.lines.dummyline[0] = 0
 
 class ThreePercent(bt.Indicator):
+    params = (('rate', 1.03),)
     lines = ('dummyline',)
 
-
-    params = (('value', 5), ('periods', [14, 50]))
-
     def __init__(self):
-
         self.lastValue = None
-
-
 
     def next(self):
         if self.lastValue is not None:
@@ -98,3 +93,50 @@ class ThreePercent(bt.Indicator):
 
         else:
             self.lastValue = self.data.close[0]
+
+class myRSI(bt.Indicator):
+    lines = ('dummyline',)
+    params = (('lowerUpperBound', [30, 70]),)
+
+    def __init__(self):
+        self.isUp = False
+        self.isDown = False
+        self.rsi = bt.indicators.RSI(self.data)
+
+    def next(self):
+
+        try:
+            if self.isUp is False and self.rsi[0]< self.p.lowerUpperBound[0]:
+                self.lines.dummyline[0] = 1
+                self.isUp = True
+            elif self.isDown is False and self.rsi[0] > self.p.lowerUpperBound[1]:
+                self.lines.dummyline[0] = -1
+                self.isDown = True
+            else:
+                self.lines.dummyline[0] = 0
+        except:
+            self.lines.dummyline[0] = 0
+
+
+class myRSI(bt.Indicator):
+    lines = ('dummyline',)
+    params = (('lowerUpperBound', [30, 70]),)
+
+    def __init__(self):
+        self.isUp = False
+        self.isDown = False
+        self.rsi = bt.indicators.RSI(self.data)
+
+    def next(self):
+
+        try:
+            if self.isUp is False and self.rsi[0]< self.p.lowerUpperBound[0]:
+                self.lines.dummyline[0] = 1
+                self.isUp = True
+            elif self.isDown is False and self.rsi[0] > self.p.lowerUpperBound[1]:
+                self.lines.dummyline[0] = -1
+                self.isDown = True
+            else:
+                self.lines.dummyline[0] = 0
+        except:
+            self.lines.dummyline[0] = 0

@@ -1,8 +1,7 @@
 from __future__ import division
-
 import yfinance as yf
-import pandas as pd
 import datetime
+import os
 
 tickers_IBEX = ["ANA.MC",
                 "ACX.MC",
@@ -39,7 +38,6 @@ tickers_IBEX = ["ANA.MC",
                 "TRE.MC",
                 "TEF.MC",
                 "VIS.MC"]
-
 tickers_EUROSTOXX = ["ADS.DE",
                      "AD.AS",
                      "AI.PA",
@@ -591,31 +589,48 @@ tickers_SP500 =["MMM",
     "ZBH",
     "ZION",
     "ZTS"]
-
-# for name in tickers_IBEX:
-#     print(name)
-#     ticker = yf.Ticker(name)
-#     hist = ticker.history(period="5y", auto_adjust=False)
-#     hist.to_csv(r"data/IBEX 35/{}.csv".format(name))
-#
-# for name in tickers_EUROSTOXX:
-#     ticker = yf.Ticker(name)
-#     hist = ticker.history(period="5y", auto_adjust=False)
-#     hist.to_csv(path_or_buf="data/EURO STOXX 50/{}.csv".format(name))
-#
-print(len(tickers_SP500))
-
-for name in tickers_SP500:
-    # NOT IN THE LIST: AMCR, CTVA, DOW
-    print(name)
-
-    ticker = yf.Ticker(name)
-    hist = ticker.history(period="5y", auto_adjust=False)
+year_period = "5y"
 
 
-    if hist.index[0] < datetime.date(2015, 6, 1):
-        new = hist.fillna(method="ffill")
-        new2 = new.fillna(method="bfill")
+### Download data from yahoo finance with yfinance and stores it in ./data/<market> as csv files.
+### Filling also blank data.
 
-        print()
-        new2.to_csv(path_or_buf="data/S&P 500/{}.csv".format(name))
+if __name__ == '__main__':
+    sumOfTickers = len(tickers_EUROSTOXX)+len(tickers_IBEX)+len(tickers_SP500)
+    currentNumber = 0
+    for name in tickers_IBEX:
+        print("{} of {}".format(currentNumber, sumOfTickers))
+        ticker = yf.Ticker(name)
+        hist = ticker.history(period=year_period, auto_adjust=False)
+        if hist.index[0] < datetime.date(2015, 6, 1):
+            #forward/backward fill data --> no empty entries
+            new = hist.fillna(method="ffill")
+            new2 = new.fillna(method="bfill")
+            hist.to_csv(r"data/IBEX 35/{}.csv".format(name))
+        currentNumber +=1
+
+    for name in tickers_EUROSTOXX:
+        print("{} of {}".format(currentNumber, sumOfTickers))
+        ticker = yf.Ticker(name)
+        hist = ticker.history(period=year_period, auto_adjust=False)
+        if hist.index[0] < datetime.date(2015, 6, 1):
+            #forward/backward fill data --> no empty entries
+            new = hist.fillna(method="ffill")
+            new2 = new.fillna(method="bfill")
+            hist = ticker.history(period="5y", auto_adjust=False)
+            hist.to_csv(path_or_buf="data/EURO STOXX 50/{}.csv".format(name))
+        currentNumber +=1
+
+    for name in tickers_SP500:
+        print("{} of {}".format(currentNumber, sumOfTickers))
+
+        # NOT IN THE LIST: AMCR, CTVA, DOW
+        ticker = yf.Ticker(name)
+        hist = ticker.history(period=year_period, auto_adjust=False)
+
+        if hist.index[0] < datetime.date(2015, 6, 1):
+            #forward/backward fill data --> no empty entries
+            new = hist.fillna(method="ffill")
+            new2 = new.fillna(method="bfill")
+            new2.to_csv(path_or_buf="data/S&P 500/{}.csv".format(name))
+        currentNumber +=1
