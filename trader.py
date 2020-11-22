@@ -41,6 +41,10 @@ def saveToTxt():
 
 
 if __name__ == '__main__':
+    # start saving console prints to Stats/last_result.txt.
+    # Uncomment to print results in console.
+    sys.stdout = open('Stats/last_result.txt', 'w')
+
     # choose end and start date for the trader to compute
     startdate = datetime.datetime(2017, 8, 4)
     enddate = datetime.date.today()
